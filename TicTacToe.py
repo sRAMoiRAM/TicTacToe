@@ -55,7 +55,7 @@ def creat_window(title, geometry):
 # Create the player selection window
 def setup_playerSelectionWindow():
     global playerSelectionWindow
-    playerSelectionWindow = creat_window("Name and Color Selection", "370x280")
+    playerSelectionWindow = creat_window("Name and Color Selection", "370x300")
 
     # Configure the grid to center the button
     for i in [0, 11]:
@@ -77,10 +77,30 @@ def setup_playerSelectionWindow():
     # Color buttons
     add_colorButtons(playerSelectionWindow, player2_name_entry, 5)
 
+    # game version check buttons
+    def toggle_checkbuttons(selected):
+        if selected == "basic":
+            ultimate_var.set(not ultimate_var.get())  # Uncheck the ULTIMATE button
+            basic_var.set(not ultimate_var.get())
+        elif selected == "ultimate":
+            basic_var.set(not basic_var.get())  # Uncheck the ULTIMATE button
+            ultimate_var.set(not basic_var.get())
+    # BASIC Checkbutton
+    basic_var = tk.IntVar(value=1)
+    basic_check = tk.Checkbutton(playerSelectionWindow, text="BASIC", variable=basic_var, 
+                              command=lambda: toggle_checkbuttons("basic"))
+    basic_check.grid(row=6, column=1, columnspan=5, padx=10, pady=10)
+
+    # ULTIMATE Checkbutton
+    ultimate_var = tk.IntVar(value=0)
+    ultimate_check = tk.Checkbutton(playerSelectionWindow, text="ULTIMATE!", variable=ultimate_var, 
+                                 command=lambda: toggle_checkbuttons("ultimate"))
+    ultimate_check.grid(row=6, column=6, columnspan=5, padx=10, pady=10)
+
     # Confirm button to check the inputs and proceed
     confirm_button = tk.Button(playerSelectionWindow, bg="lightsteelblue", text="Confirm", font=("Arial", 12))
-    confirm_button.config(command=lambda: confirm_selection(player1_name_entry, player2_name_entry))
-    confirm_button.grid(row=6, column=1, columnspan=10, pady=30)
+    confirm_button.config(command=lambda: confirm_selection(player1_name_entry, player2_name_entry, basic_var.get()))
+    confirm_button.grid(row=7, column=1, columnspan=10, pady=10)
 
     # Start the Tkinter event loop
     playerSelectionWindow.mainloop()
@@ -138,7 +158,7 @@ def colorButton_click(clicked_colorButton, entry):
     entry.config(bg=clicked_colorButton.cget("bg"))
 
     # Function to check whether the players have entered names and selected unique colors
-def confirm_selection(player1_name_entry, player2_name_entry):
+def confirm_selection(player1_name_entry, player2_name_entry, version):
     player1_name = player1_name_entry.get()
     player2_name = player2_name_entry.get()
     player1_color = player1_name_entry.cget("bg")
@@ -148,12 +168,14 @@ def confirm_selection(player1_name_entry, player2_name_entry):
         messagebox.showerror("Error", "Both players must enter a name.")
     elif player1_color == player2_color:
         messagebox.showerror("Error", "Both players must choose different colors.")
-    else:
+    elif version:
         global player1, player2
         player1 = players(player1_name, "X", True, player1_color)
         player2 = players(player2_name, "O", False, player2_color)
         destroy_window(playerSelectionWindow)
         setup_TicTacToeWindow()
+    else:
+        messagebox.showerror("Error", "This mode is not implemented yet.")
 
 def ticButton_click(button):
     player1.move(button) if player1.turn else player2.move(button)
