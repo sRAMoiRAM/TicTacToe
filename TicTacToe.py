@@ -35,6 +35,16 @@ class players:
     def win(self):
         destroy_window(tictactoeWindow, buttons)
         setup_resultWindow(self)
+
+# Child class: UltimatePlayer
+class UltimatePlayer(players):
+    def move(self, ultimate_button):
+        ultimate_button.config(text=self.sign, bg=self.color, state="disabled")
+        self.turn = False
+        self.set_next_player_turn()
+        """ Add ultimate player move"""
+
+       
 # endregion
 
 # region Windows
@@ -128,6 +138,42 @@ def setup_TicTacToeWindow():
 
     tictactoeWindow.mainloop() # start the main event loop
 
+# Function to set up the TicTacToe window
+def setup_Ultimate_TicTacToeWindow():
+    global Ultimate_tictactoeWindow
+    Ultimate_tictactoeWindow = creat_window("Ultimate TicTacToe", "822x878")
+    Ultimate_tictactoeWindow.resizable(False, False) # Make the window size unchangeable
+
+    global ultimate_buttons, ultimate_fields
+    ultimate_fields = []
+    ultimate_buttons = []
+    # Create a 3x3 grid of buttons
+    for row in range(3):
+        for col in range(3):
+            # Create a field, for 9 buttons
+            ultimate_field = tk.Frame(Ultimate_tictactoeWindow, width=270, height=290)  # Adjust size as needed
+            # Place the button in the grid
+            ultimate_field.grid(row=row, column=col, padx=2, pady=2)  # Add padding around the buttons
+            # Store the button reference in the list
+            ultimate_fields.append(ultimate_field)
+
+    # Create a 3x3 grid of buttonsin each field
+    for field in ultimate_fields:
+        for row in range(3):
+            for col in range(3):
+                # Create a button, with text and command to handle clicks
+                ticButton = tk.Button(field, text=f"*", 
+                                width=10, height=5)  # Adjust size as needed
+                # Assign the button click function with reference to the button itself
+                ticButton.config(command=lambda b=ticButton: ultimate_ticButton_click(b))
+                # Place the button in the grid
+                ticButton.grid(row=row, column=col, padx=5, pady=5)  # Add padding around the buttons
+                # Store the button reference in the list
+                ultimate_buttons.append(ticButton)
+
+    Ultimate_tictactoeWindow.mainloop() # start the main event loop
+
+
 # Function to set up the window when TicTacToe is finished
 def setup_resultWindow(player=None):
     global resultWindow
@@ -164,20 +210,26 @@ def confirm_selection(player1_name_entry, player2_name_entry, version):
     player1_color = player1_name_entry.cget("bg")
     player2_color = player2_name_entry.cget("bg")
 
+    global player1, player2
     if not player1_name or not player2_name:
         messagebox.showerror("Error", "Both players must enter a name.")
     elif player1_color == player2_color:
         messagebox.showerror("Error", "Both players must choose different colors.")
     elif version:
-        global player1, player2
         player1 = players(player1_name, "X", True, player1_color)
         player2 = players(player2_name, "O", False, player2_color)
         destroy_window(playerSelectionWindow)
         setup_TicTacToeWindow()
     else:
-        messagebox.showerror("Error", "This mode is not implemented yet.")
+        player1 = UltimatePlayer(player1_name, "X", True, player1_color)
+        player2 = UltimatePlayer(player2_name, "O", False, player2_color)
+        destroy_window(playerSelectionWindow)
+        setup_Ultimate_TicTacToeWindow()
 
 def ticButton_click(button):
+    player1.move(button) if player1.turn else player2.move(button)
+
+def ultimate_ticButton_click(button):
     player1.move(button) if player1.turn else player2.move(button)
 
 def buttonReplay_click():
